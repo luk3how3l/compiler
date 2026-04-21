@@ -128,13 +128,16 @@ private:
 
 class CoutStatementNode :public StatementNode {
 public:
-	CoutStatementNode (ExpressionNode* ExpressNode);
+	//CoutStatementNode (ExpressionNode* ExpressNode);
+	CoutStatementNode(std::vector<ExpressionNode*> expressions, int endlCount);
 	virtual ~CoutStatementNode();
 	void Code(InstructionsClass &machinecode);
 	void Interpret();
 
 private:
-	ExpressionNode* mEXPRESSNODE;
+	//ExpressionNode* mEXPRESSNODE;
+	std::vector<ExpressionNode*> mExpressions;
+    int mEndlCount;
 };
 
 

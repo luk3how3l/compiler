@@ -112,23 +112,41 @@ void AssignmentStatementNode::Code(InstructionsClass &machineCode)
 	//mIDNODE->Code(machineCode);
 }
 
-CoutStatementNode::CoutStatementNode(ExpressionNode* ExpressNode) {
-	mEXPRESSNODE = ExpressNode;
+CoutStatementNode::CoutStatementNode(std::vector<ExpressionNode*> expressions, int endlCount)
+{
+	mExpressions = expressions;
+    mEndlCount = endlCount;
 	//have an list of expline node like
 }
-CoutStatementNode::~CoutStatementNode() { delete mEXPRESSNODE; }
+CoutStatementNode::~CoutStatementNode() { 
+	for (auto e : mExpressions)
+    {delete e;}
+}
 
 void CoutStatementNode::Interpret()
 {
-	int value = mEXPRESSNODE->Evaluate();
-	//debug below?? 
-	std::cout << value << std::endl;
+    for (auto e : mExpressions)
+    {
+        std::cout << e->Evaluate() << " ";
+    }
+
+    for (int i = 0; i < mEndlCount; i++)
+    {
+        std::cout << std::endl;
+    }
 }
 
 void CoutStatementNode::Code(InstructionsClass &machineCode)
 { //check if goog
-	mEXPRESSNODE->CodeEvaluate(machineCode);
-    machineCode.PopAndWrite();
+	for (auto e : mExpressions)
+    {
+        e->CodeEvaluate(machineCode);
+        machineCode.PopAndWrite();
+    }
+	for (int i = 0; i < mEndlCount; i++)
+    {
+        machineCode.WriteEndlLinux64(); // make sure this exists
+    }
 }
 
 ExpressionNode::~ExpressionNode() {}//-> identifier or integer or expression + expression
