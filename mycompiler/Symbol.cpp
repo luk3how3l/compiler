@@ -2,27 +2,34 @@
 #include <cstdlib> 
 
 bool SymbolTableClass::Exists(const std::string& s) {
+	
+	int start = mScopeStarts.back();
+	
 	bool yainside = false;
-	for (const auto& variable : mVariables)
-	{
-		if (variable.mLabel == s)
-			return true;
-	}
+	for (int i = start; i < mVariables.size(); i++)
+    {
+        if (mVariables[i].mLabel == s)
+            return true;
+    }
 	//an lookup function to see if insde the data structure SymbolTable class
 	return yainside; // returns true if <s> is already in the symbol table.
 }
 
 void SymbolTableClass::AddEntry(const std::string& s) {
+	MSG("[SYMTABLE] Adding: " << s << " at scope depth " << mScopeStarts.size());
+
 	if (Exists(s)) {
 		std::cerr << "Variable already declared -> " << s << std::endl;
-		return; // or quits if it was already there
+		throw std::runtime_error("Already Declared Variable");
+
+		//return; // or quits if it was already there
 	}
 	Variable entry;
 	entry.mLabel = s;
 	entry.mValue = 0;
 	
-	//mVariables.push_back({ s, 0 });
 	mVariables.push_back(entry);  // adds <s> to the symbol table
+	 MSG("[SYMTABLE] Table size now: " << GetCount());
 }
 
 
@@ -50,13 +57,30 @@ void SymbolTableClass::SetValue(const std::string& s, int v) {
 	mVariables[index].mValue = v;
 }
 
-int SymbolTableClass::GetIndex(const std::string& s) {
-	for (int i = 0; i < mVariables.size(); i++)
-	{
-		if (mVariables[i].mLabel == s)
-			return i; // returns a unique index of where variable <s> is.
-	}
-	return -1; // returns -1 if variable <s> is not there.
+int SymbolTableClass::GetIndex(const std::string& s)
+{	MSG("[SYMTABLE] Lookup: " << s);
+
+    // walk scopes from inner → outer
+    for (int scope = (int)mScopeStarts.size() - 1; scope >= 0; scope--)
+    {
+        int start = mScopeStarts[scope];
+
+        int end;
+        if (scope == (int)mScopeStarts.size() - 1)
+            end = (int)mVariables.size();
+        else
+            end = mScopeStarts[scope + 1];
+
+        // search ONLY inside this scope
+        for (int i = end - 1; i >= start; i--)
+        {
+            if (mVariables[i].mLabel == s)
+                return i;
+        }
+    }
+	MSG("[SYMTABLE] FAILED lookup: " << s);
+    std::cerr << "ERROR: Variable not found: " << s << std::endl;
+    return -1;
 }
 
 
@@ -74,3 +98,20 @@ void SymbolTableClass::Print()
 	}
 }
  
+SymbolTableClass::SymbolTableClass(){
+	EnterScope(); 
+}
+
+void SymbolTableClass::EnterScope()
+{	
+	MSG(">>> ENTER SCOPE (depth=" << mScopeStarts.size() << ", size=" << mVariables.size() << ")");
+    mScopeStarts.push_back(mVariables.size());
+}
+
+void SymbolTableClass::ExitScope()
+{ //sanity check if size is one 
+    int start = mScopeStarts.back();
+    mScopeStarts.pop_back();
+	 MSG("<<< EXIT SCOPE → resizing to " << start);
+    mVariables.resize(start);
+}

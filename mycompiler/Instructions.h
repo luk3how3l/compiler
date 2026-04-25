@@ -32,6 +32,7 @@ public:
 	void PrintMinusLinux64();
 	void PrintSpaceLinux64();
 	void WriteSpaceLinux64();
+	void WriteEndlLinux64();
 	void PopAndWrite();
 	void PopAndStore(int index);
 	unsigned char* GetAddress();
@@ -58,6 +59,8 @@ private:
 	// The value of mCurrent where PrintIntegerLinux 64 starts.
 	// Jump to this offset of mCode to print.
 	int mStartOfMain;
+	
+	char mNewlineCharacter;
 	// the value of mCurrent after coding the Print functions.
 	// Jump to this offset of mCode to start program execution.
 	char mMinusString; // Holds '-'

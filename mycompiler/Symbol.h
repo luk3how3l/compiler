@@ -11,7 +11,7 @@ int unittest();
 class SymbolTableClass
 {
 public:
-	//SymbolTableClass();
+	SymbolTableClass();
 
 	bool Exists(const std::string& s);
 	
@@ -27,7 +27,12 @@ public:
 
 	void Print();
 
+	void EnterScope();
+
+	void ExitScope();
+
 private:
+	
 	struct  Variable
 	{
 		std::string mLabel{};
@@ -35,4 +40,6 @@ private:
 	};
 	
 	std::vector<Variable>mVariables;
+
+	std::vector<int> mScopeStarts;
 };

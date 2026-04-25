@@ -32,14 +32,23 @@ void ProgramNode::Code(InstructionsClass &machineCode)
 BlockNode::~BlockNode(){delete mSGNode;}
 
 
-BlockNode::BlockNode(StatementGroupNode* ndee){
-	mSGNode = ndee;}
+BlockNode::BlockNode(StatementGroupNode* ndee, SymbolTableClass* ST){
+	mSGNode = ndee;
+	mSymtable = ST;}
 
 void BlockNode::Interpret()
-{mSGNode->Interpret();}
+{	mSymtable->EnterScope(); //start of scope
+	mSGNode->Interpret();
+	mSymtable->ExitScope(); //
+}
 
 void BlockNode::Code(InstructionsClass &machineCode)
-{mSGNode->Code(machineCode);}
+{	MSG(">>> ENTER BLOCK NODE");
+	mSymtable->EnterScope(); 
+	mSGNode->Code(machineCode);
+	mSymtable->ExitScope();
+	MSG("<<< EXIT BLOCK NODE");
+}
 
 //LCURLY <StatementGroup> RCURLY
 StatementGroupNode::StatementGroupNode(){} //-> empty
@@ -69,7 +78,8 @@ void StatementGroupNode::Interpret()
 void StatementGroupNode::Code(InstructionsClass &machineCode)
 {
 	for (StatementNode* stmt : mListStatementNode)
-	{
+	{	
+		MSG("Running statement:" << typeid(*stmt).name());
 		stmt->Code(machineCode);
 	}
 }
@@ -83,12 +93,16 @@ DeclarationStatementNode::~DeclarationStatementNode() { delete mIDNode;}
 void DeclarationStatementNode::Interpret()
 {	
 	//mIDNode->Interpret();
+	MSG("[DECL] Declaring variable: " );
 	mIDNode->DeclareVariable();
 }
 
 void DeclarationStatementNode::Code(InstructionsClass &machineCode)
 { //can't push an variable since not init yet
-//mIDNode->Code(machineCode);
+	MSG("[DECL][CODE] Declaring variable: " << mIDNode->GetIndex());
+	//mIDNode->Code(machineCode);
+	//telling me to not call code:
+	mIDNode->DeclareVariable();
 }
 
 AssignmentStatementNode::AssignmentStatementNode(IdentifierNode* IDnode, ExpressionNode* Expressnode) {
@@ -105,22 +119,36 @@ void AssignmentStatementNode::Interpret()
 }
 
 void AssignmentStatementNode::Code(InstructionsClass &machineCode)
-{	//it ask for this ... in 5.
+{	
+	//MSG("[ASSIGN] " << mLeft->GetLabel());
+
 	mEXPRESSNODE->CodeEvaluate(machineCode);
 	int index = mIDNODE->GetIndex();
+	MSG("[ASSIGN] Index = " << index);
+
+	if (index < 0)
+    {
+        MSG("[FATAL] Assignment to undeclared variable!");
+        std::cout << "Should throw an ERROR \n" << std::endl;
+		throw std::runtime_error("Semantic error");
+    }
+
 	machineCode.PopAndStore(index);
 	//mIDNODE->Code(machineCode);
 }
 
 CoutStatementNode::CoutStatementNode(std::vector<ExpressionNode*> expressions, int endlCount)
 {
-	mExpressions = expressions;
+    mExpressions = expressions;
     mEndlCount = endlCount;
-	//have an list of expline node like
 }
-CoutStatementNode::~CoutStatementNode() { 
-	for (auto e : mExpressions)
-    {delete e;}
+
+CoutStatementNode::~CoutStatementNode()
+{
+    for (auto e : mExpressions)
+    {
+        delete e;
+    }
 }
 
 void CoutStatementNode::Interpret()
@@ -137,15 +165,16 @@ void CoutStatementNode::Interpret()
 }
 
 void CoutStatementNode::Code(InstructionsClass &machineCode)
-{ //check if goog
-	for (auto e : mExpressions)
+{
+    for (auto e : mExpressions)
     {
         e->CodeEvaluate(machineCode);
         machineCode.PopAndWrite();
     }
-	for (int i = 0; i < mEndlCount; i++)
+
+    for (int i = 0; i < mEndlCount; i++)
     {
-        machineCode.WriteEndlLinux64(); // make sure this exists
+        machineCode.WriteEndlLinux64();
     }
 }
 
@@ -154,7 +183,7 @@ ExpressionNode::~ExpressionNode() {}//-> identifier or integer or expression + e
 void ExpressionNode::Code(InstructionsClass &machineCode)
 {
     CodeEvaluate(machineCode);
-} //add recently could be problemtic
+} 
 
 IntegerNode::IntegerNode(int danum) {
 	mNumber = danum;
@@ -165,8 +194,6 @@ int IntegerNode::Evaluate(){return mNumber;}
 IdentifierNode::IdentifierNode(const std::string& label, SymbolTableClass* table) {
 	mTable = table;
 	mLabel = label;
-
-
 } //-> identifier
 
 void IntegerNode::CodeEvaluate(InstructionsClass &machineCode)
@@ -177,7 +204,8 @@ void IntegerNode::CodeEvaluate(InstructionsClass &machineCode)
 void 
 IdentifierNode::DeclareVariable() {
 	mTable->AddEntry(mLabel);
-	//may need to switch thisw out?? 
+	MSG("[SYMTABLE] AddEntry: " << mLabel);
+    //mIndex = mTable->GetIndex(mLabel);
 }
 
 void IdentifierNode::SetValue(int v)
@@ -186,8 +214,9 @@ void IdentifierNode::SetValue(int v)
 }
 
 int IdentifierNode::GetIndex()
-{
-	return mTable->GetIndex(mLabel);
+{	int inx = mTable->GetIndex(mLabel);
+	MSG("[IDENTIFIER] " << mLabel << " -> index " << inx);
+	return inx;
 }
 
 int IdentifierNode::Evaluate()
@@ -198,6 +227,11 @@ int IdentifierNode::Evaluate()
 void IdentifierNode::CodeEvaluate(InstructionsClass &machineCode)
 {
     int index = GetIndex();
+	if (index < 0)
+	{
+    throw std::runtime_error("Variable not found: " + mLabel);
+	}
+
     machineCode.PushVariable(index);
 }
 

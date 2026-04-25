@@ -1,1 +1,1 @@
-void main() { int x; x = (5 + 5) * (5 + 5); if (x == 100) { x -= 50; cout << x; } }
+void main() { int x; x = 2; { int y; y = x + 3; { int z; z = y + x; cout << z << endl; } } }

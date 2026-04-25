@@ -59,7 +59,7 @@ TokenClass ScannerClass::GetNextToken()
 	do
 	{
 		lexeme += c;
-		MSG("Lexeme: >" << lexeme << "<");
+		//MSG("Lexeme: >" << lexeme << "<");
 
 
 		currentState = stateMachine.UpdateState(c, previousTokenType);
@@ -107,7 +107,7 @@ TokenClass ScannerClass::PeekNextToken() {
 	mCurr_line_number = oldLineNumber;
 
 	
-	MSG("Peek aahhead func peeks: token is >" << tc.GetLexeme() << "<");
+	//MSG("Peek aahhead func peeks: token is >" << tc.GetLexeme() << "<");
 		
 	return tc;
 }

@@ -190,11 +190,12 @@ ProgramNode* ParserClass::Program() {
 }
 
 BlockNode* ParserClass::Block() {
+	
 	Match(LCURLY_TOKEN);
 	StatementGroupNode* Gay = StatementGroup();
 	Match(RCURLY_TOKEN);
-
-	BlockNode* blon = new BlockNode(Gay);
+	BlockNode* blon = new BlockNode(Gay, mSymTable); //add symbolTable as 2nd argument in this function??
+	
 	return blon;
 
 }
@@ -263,12 +264,10 @@ StatementNode* ParserClass::Statement() {
 }
 
 DeclarationStatementNode* ParserClass::DeclarationStatement()
-{
+{	 MSG("DeclarationStatement" << INT_TOKEN);
 	Match(INT_TOKEN);
 	TokenClass id = Match(IDENTIFIER_TOKEN);
 	Match(SEMICOLON_TOKEN);
-
-	mSymTable->AddEntry(id.GetLexeme());
 
 	IdentifierNode* idNode =
 		new IdentifierNode(id.GetLexeme(), mSymTable);
@@ -276,29 +275,92 @@ DeclarationStatementNode* ParserClass::DeclarationStatement()
 	return new DeclarationStatementNode(idNode);
 }
 
-AssignmentStatementNode* ParserClass::AssignmentStatement(){
-	TokenClass id = Match(IDENTIFIER_TOKEN);
+AssignmentStatementNode* ParserClass::AssignmentStatement()
+{
+    TokenClass id = Match(IDENTIFIER_TOKEN);
 
-	Match(ASSIGNMENT_TOKEN);
-	ExpressionNode* expr = Relational();
-	Match(SEMICOLON_TOKEN);
+    // Create the LHS identifier node (used for assignment target)
+    IdentifierNode* idNode =
+        new IdentifierNode(id.GetLexeme(), mSymTable);
 
+    TokenType tt = mScanner->PeekNextToken().GetTokenType();
 
-	IdentifierNode* idNode =
-		new IdentifierNode(id.GetLexeme(), mSymTable);
+    if (tt == ASSIGNMENT_TOKEN)
+    {
+        Match(ASSIGNMENT_TOKEN);
+        ExpressionNode* expr = Relational();
+        Match(SEMICOLON_TOKEN);
 
-	return new AssignmentStatementNode(idNode, expr);
+        return new AssignmentStatementNode(idNode, expr);
+    }
+    else if (tt == PLUSEQUAL_TOKEN)
+    {
+        Match(PLUSEQUAL_TOKEN);
+
+        ExpressionNode* right = Relational();
+
+        // 🔥 Build: x + right
+        ExpressionNode* leftValue =
+            new IdentifierNode(id.GetLexeme(), mSymTable);
+
+        ExpressionNode* sum =
+            new PlusNode(leftValue, right);
+
+        Match(SEMICOLON_TOKEN);
+
+        //Build: x = (x + right)
+        return new AssignmentStatementNode(idNode, sum);
+    }
+	else if (tt == MINUSEQUAL_TOKEN)
+    {
+        Match(MINUSEQUAL_TOKEN);
+
+        ExpressionNode* right = Relational();
+
+        //Build: x + right
+        ExpressionNode* leftValue =
+            new IdentifierNode(id.GetLexeme(), mSymTable);
+
+        ExpressionNode* sum =
+            new MinusNode(leftValue, right);
+
+        Match(SEMICOLON_TOKEN);
+
+        //Build: x = (x + right)
+        return new AssignmentStatementNode(idNode, sum);
+    }
+    // Optional: safety
+    std::cerr << "ERROR: Expected assignment operator\n";
+    exit(1);
 }
 
 CoutStatementNode* ParserClass::CoutStatement()
 {
-	Match(COUT_TOKEN);
-	Match(INSERTION_TOKEN);
-	ExpressionNode* expr = Relational();
+    std::vector<ExpressionNode*> expressions;
+    int endlCount = 0;
 
-	Match(SEMICOLON_TOKEN);
+    Match(COUT_TOKEN);
 
-	return new CoutStatementNode(expr);
+    do {
+        Match(INSERTION_TOKEN);
+
+        TokenType tt = mScanner->PeekNextToken().GetTokenType();
+
+        if (tt == ENDLINE_TOKEN)
+        {
+            Match(ENDLINE_TOKEN);
+            endlCount++;
+        }
+        else
+        {
+            expressions.push_back(Relational()); // FIX THIS BELOW
+        }
+
+    } while (mScanner->PeekNextToken().GetTokenType() == INSERTION_TOKEN);
+
+    Match(SEMICOLON_TOKEN);
+
+    return new CoutStatementNode(expressions, endlCount);
 }
 
 IfStatementNode* ParserClass::IfStatement()
@@ -329,9 +391,3 @@ WhileStatementNode* ParserClass::WhileStatement()
 
 	return new WhileStatementNode(condition, stmt);
 }
-
-
-
-
-
-

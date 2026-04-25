@@ -149,6 +149,7 @@ int* InstructionsClass::GetMem(int index)
 {	
 	if (index < 0 || index >= MAX_DATA)
 	{
+		std::cerr << "DEBUG: accessing memory index = " << index << std::endl;
 		std::cerr << "Error: Memory index out of bounds\n";
 		exit(1);
 	}
@@ -184,7 +185,8 @@ InstructionsClass::InstructionsClass()
 	mTempInteger = 0;
 	mMinusString = '-';
 	mSpaceString = ' ';
-	
+	mNewlineCharacter = '\n';
+
 	// Record where the PrintIntegerLinux64 function starts:
 	mStartOfPrint = mCurrent;
 	// Code one function PrintIntegerLinux64 that prints an integer.
@@ -365,6 +367,26 @@ void InstructionsClass::WriteSpaceLinux64()
 	// 64 bit syscall:
 	Encode((unsigned char)SYS_CALL1);
 	Encode((unsigned char)SYS_CALL2);
+}
+
+void InstructionsClass::WriteEndlLinux64()
+{
+    Encode(IMMEDIATE_TO_EAX);
+    Encode((int)1); // syscall: write
+
+    Encode(IMMEDIATE_TO_EDI);
+    Encode((int)1); // fd: stdout
+
+    Encode(BIT64);
+
+    Encode(IMMEDIATE_TO_ESI);
+    Encode(&mNewlineCharacter); // address of '\n'
+
+    Encode(IMMEDIATE_TO_EDX);
+    Encode((int)1); // length = 1 byte
+
+    Encode((unsigned char)SYS_CALL1);
+    Encode((unsigned char)SYS_CALL2);
 }
 
 void InstructionsClass::PrintAllMachineCodes()

@@ -226,6 +226,6 @@ MachineState StateMachineClass::UpdateState(char currentCharacter,
 
         previousTokenType = mCorrespondingTokenTypes[mCurrentState];
         mCurrentState = mLegalMoves[mCurrentState][charType];
-        MSG("UpdateState-> Current State: " << mCurrentState);
+        //MSG("UpdateState-> Current State: " << mCurrentState);
         return mCurrentState;
     }

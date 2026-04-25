@@ -2,7 +2,6 @@
 
 #include <fstream>
 #include <string>
-
 #include "Token.h"
 
 class ScannerClass
@@ -19,8 +18,5 @@ public:
 private:
     std::ifstream mFin;
     int mCurr_line_number;
-    //bool mHasPeeked;
-    //TokenClass mPeekedToken;
-
 };
 //only need endif if use ifndef

@@ -31,48 +31,6 @@ delete root;
 
 int main()
 {
-	/*	 
-	std::cout << "Running PArser with Output with # of test is "<< tests.size() << std::endl;
-
-	for (size_t i = 0; i < tests.size(); i++)
-	{
-		std::cout << "\n==== Running Test "<< (i+1) <<": " << tests[i].name << " ====\n";
-		//show code
-		std::cout << "----- Source Code -----\n";
-		std::cout << tests[i].code << std::endl;
-		std::cout << "-----------------------\n";
-
-		// write test to temporary file
-		std::ofstream file("temp_test.txt");
-		file << tests[i].code;
-		file.close();
-
-		try
-		{
-			ScannerClass scanner("temp_test.txt");
-			SymbolTableClass table;
-			ParserClass parser(&scanner, &table);
-			//parser.Start();
-			StartNode* root = parser.Start();
-
-			std::cout << "----- Program Output -----\n";
-			root->Interpret();
-			std::cout << "\n--------------------------\n";
-
-			if (tests[i].shouldPass)
-				std::cout << "PASS (program parsed)\n\n";
-			else
-				std::cout << "FAIL (should have errored)\n\n";
-		}
-		catch (...)
-		{
-			if (!tests[i].shouldPass)
-				std::cout << "PASS (error correctly detected)\n\n\n\n\n\n\n\n\n";
-			else
-				std::cout << "FAIL (valid program rejected)\n\n\n\n\n\n\n";
-		}
-	}
-	*/
 
 struct Test {
         std::string name;
@@ -80,7 +38,6 @@ struct Test {
     };
 
     std::vector<Test> tests = {
-
     {"Print constant",
      "void main() { cout << 1000; }"},
 
@@ -140,17 +97,60 @@ struct Test {
 
     {"Variable reuse",
 	"void main() { int a; int b; a = 10; b = 20; cout << a; cout << b; }"},
-
+    
 	{"Enchancements problem 1",
-     "void main() { int x; x = 8; cout << 10 << x+2 << endl << endl << x*3+1 << endl ; }"},
+    "void main() { int x; x = 8; cout << 10 << x+2 << endl << endl << x*3+1 << endl ; }"},
 
 	{"Enchancements problem 2 +=",
-     "void main() { int x; x = (5 + 5) * (5 + 5); if (x == 100) { x += 20; cout << x; } }"},
+    "void main() { int x; x = (5 + 5) * (5 + 5); if (x == 100) { x += 20; cout << x; } }"},
 
 	{"Enchancements problem 2 -=",
-     "void main() { int x; x = (5 + 5) * (5 + 5); if (x == 100) { x -= 50; cout << x; } }"}
+    "void main() { int x; x = (5 + 5) * (5 + 5); if (x == 100) { x -= 50; cout << x; } }"},
+    
+    {"Scope 1: simple shadow",
+    "void main() { int x; x = 5; { int x; x = 10; cout << x << endl; } cout << x << endl; }"},
 
-	};
+    {"Scope 2: inner does not affect outer",
+    "void main() { int x; x = 3; { int x; x = 7; } cout << x << endl; }"},
+
+    {"Scope 3: reuse outer after block",
+    "void main() { int x; x = 2; { int y; y = 9; } cout << x << endl; }"},
+
+    {"Scope 4: multiple nested scopes",
+    "void main() { int x; x = 1; { int x; x = 2; { int x; x = 3; cout << x << endl; } cout << x << endl; } cout << x << endl; }"},
+	
+    
+    {"Scope 16: use after scope (should fail)",
+    "void main() { { int x; x = 5; } cout << x << endl; }"},
+    
+    {"Scope 17: inner variable lost",
+    "void main() { int y; { int x; x = 5; y = x; } cout << y << endl; }"},
+    
+    {"Scope 21: triple nesting",
+    "void main() { int x; x = 1; { int x; x = 2; { int x; x = 3; { int x; x = 4; cout << x << endl; } } } }"},
+
+    {"Scope 22: outer reuse after deep",
+    "void main() { int x; x = 9; { int x; x = 1; { int x; x = 2; } } cout << x << endl; }"},
+    
+    {"Scope 27: redeclare same scope (should fail)",
+    "void main() { int x; int x; }"},
+
+    {"Scope 28: nested redeclare ok",
+    "void main() { int x; { int x; } }"},
+
+    {"Scope 29: many nested",
+    "void main() { int x; x = 0; { int x; x = 1; { int x; x = 2; { int x; x = 3; cout << x << endl; } } } }"},
+
+    {"Scope 30: alternating shadow",
+    "void main() { int x; x = 1; { int x; x = 2; } { int x; x = 3; cout << x << endl; } }"},
+
+    {"Scope 33: deep reuse",
+    "void main() { int x; x = 5; { int y; y = x; { int x; x = y + 2; cout << x << endl; } } }"},
+
+    {"Scope 34: chained dependencies",
+    "void main() { int x; x = 2; { int y; y = x + 3; { int z; z = y + x; cout << z << endl; } } }"},
+        
+};
 
     for (size_t i = 0; i < tests.size(); i++)
     {
@@ -174,7 +174,7 @@ struct Test {
         }
         catch (...)
         {
-            std::cout << "❌ FAIL (crashed)\n";
+            std::cout << "❌ FAIL (very graceful exit)\n";
         }
     }
 

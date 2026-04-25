@@ -76,15 +76,14 @@ private:
 //4
 class BlockNode :public StatementNode {
 public:
-	BlockNode(StatementGroupNode* SGNode);
+	BlockNode(StatementGroupNode* SGNode, SymbolTableClass* ST);
 	virtual ~BlockNode();
 	void Interpret();
 	void Code(InstructionsClass &machinecode);
 	
 private:
 	StatementGroupNode* mSGNode;
-
-
+	SymbolTableClass* mSymtable;
 }; //LCURLY <StatementGroup> RCURLY
 
 
@@ -135,9 +134,8 @@ public:
 	void Interpret();
 
 private:
-	//ExpressionNode* mEXPRESSNODE;
 	std::vector<ExpressionNode*> mExpressions;
-    int mEndlCount;
+	int mEndlCount;
 };
 
 
@@ -178,6 +176,7 @@ public:
 private:
 	SymbolTableClass* mTable;
 	std::string mLabel;
+	//int mIndex;
 }; //-> identifier
 
 class BinaryOperatorNode : public ExpressionNode {

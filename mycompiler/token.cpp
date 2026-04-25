@@ -49,6 +49,8 @@ TokenClass::TokenClass(TokenType type, const std::string& lexeme)
             mType = OR_TOKEN;
         else if (mLexeme == "and")
             mType = AND_TOKEN;
+        else if (mLexeme == "endl")
+            mType = ENDLINE_TOKEN;
 
         //else if (mLexeme == "!=")  //not need lol should put in DFA logic 
             //mType = NOTEQUAL_TOKEN;

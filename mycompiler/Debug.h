@@ -7,7 +7,7 @@
 #define ShowMessages 0
 //This is used as a switch to control a macro called MSG(X).  
 
-//If ShowMessages is 1, #define MSG(X) to “std::cout << X << std::endl”. 
+//If ShowMessages is 1, #define MSG(X) to ï¿½std::cout << X << std::endlï¿½. 
 // Otherwise, MSG(X) should map to nothing. 
 #if ShowMessages
 	#define MSG(X) std::cout << X << std::endl;
