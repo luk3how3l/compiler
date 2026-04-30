@@ -135,7 +135,7 @@ public:
 
 private:
 	std::vector<ExpressionNode*> mExpressions;
-	int mEndlCount;
+	//int mEndlCount;
 };
 
 
@@ -153,6 +153,22 @@ public:
 private:
 
 }; //-> identifier or integer or expression + expression
+
+class EndlNode : public ExpressionNode
+{
+public:
+    int Evaluate(); // { return 0; } // never used meaningfully
+
+    virtual void CodeEvaluate(InstructionsClass &machineCode);
+
+	~EndlNode();
+
+    void Interpret();
+
+    void Code(InstructionsClass &machineCode);
+};
+
+
 
 class IntegerNode :public ExpressionNode {
 public:

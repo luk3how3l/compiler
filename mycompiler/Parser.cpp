@@ -349,7 +349,7 @@ CoutStatementNode* ParserClass::CoutStatement()
         if (tt == ENDLINE_TOKEN)
         {
             Match(ENDLINE_TOKEN);
-            endlCount++;
+            expressions.push_back(new EndlNode());
         }
         else
         {

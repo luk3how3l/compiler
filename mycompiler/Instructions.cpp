@@ -143,6 +143,8 @@ void InstructionsClass::Encode(void* p)
 	{
 		Encode((long long)p);
 	}
+
+	//chat say to fix this dangerous due long long with uintptr_t
 }
 
 int* InstructionsClass::GetMem(int index)
@@ -452,7 +454,7 @@ void InstructionsClass::PopPopMulPush()
 
 void InstructionsClass::PopPopComparePush(unsigned char relational_operator)
 {
- Encode(POP_EBX);
+ Encode(POP_EBX); //Calling it silent failure which chat is dumb
  Encode(POP_EAX);
  Encode(CMP_EAX_EBX1);
  Encode(CMP_EAX_EBX2); // The FLAG register is now set.
@@ -482,7 +484,7 @@ void InstructionsClass::PopPopLessEQPush()
 // >
 void InstructionsClass::PopPopGrePush()
 {
- PopPopComparePush(JGE);
+ PopPopComparePush(JG);
 }
 // >=
 void InstructionsClass::PopPopGreEQPush()

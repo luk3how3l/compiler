@@ -140,7 +140,6 @@ void AssignmentStatementNode::Code(InstructionsClass &machineCode)
 CoutStatementNode::CoutStatementNode(std::vector<ExpressionNode*> expressions, int endlCount)
 {
     mExpressions = expressions;
-    mEndlCount = endlCount;
 }
 
 CoutStatementNode::~CoutStatementNode()
@@ -154,28 +153,53 @@ CoutStatementNode::~CoutStatementNode()
 void CoutStatementNode::Interpret()
 {
     for (auto e : mExpressions)
-    {
+    {	
+		if (dynamic_cast<EndlNode*>(e)){
+			e->Evaluate();
+		}else{
         std::cout << e->Evaluate() << " ";
-    }
+			}
+	}
 
-    for (int i = 0; i < mEndlCount; i++)
-    {
-        std::cout << std::endl;
-    }
+    
 }
 
 void CoutStatementNode::Code(InstructionsClass &machineCode)
 {
     for (auto e : mExpressions)
     {
-        e->CodeEvaluate(machineCode);
-        machineCode.PopAndWrite();
+		if (dynamic_cast<EndlNode*>(e))
+        {
+            e->Code(machineCode);
+        }
+        else
+        {
+            e->CodeEvaluate(machineCode);
+            machineCode.PopAndWrite();
+        }
     }
+}
 
-    for (int i = 0; i < mEndlCount; i++)
-    {
-        machineCode.WriteEndlLinux64();
-    }
+EndlNode::~EndlNode(){}
+
+void EndlNode::Interpret()
+{
+	std::cout << std::endl;
+}
+
+int EndlNode::Evaluate() {
+    std::cout << std::endl;
+    return 0;
+}
+
+void EndlNode::Code(InstructionsClass &machineCode)
+{
+	machineCode.WriteEndlLinux64();
+}
+
+void EndlNode::CodeEvaluate(InstructionsClass &machineCode)
+{
+    // Do nothing — endl is handled separately
 }
 
 ExpressionNode::~ExpressionNode() {}//-> identifier or integer or expression + expression
