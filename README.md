@@ -81,7 +81,6 @@ g++ -std=c++17 -o mycompiler *.cpp
 
 ![Compiler Output](mycompiler/CompilerSS.png)
 
-*(Replace with a screenshot showing test execution and output results)*
 
 ## Future Improvements
 
